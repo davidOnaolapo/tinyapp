@@ -1,17 +1,29 @@
 const express = require("express");
 
 const app = express();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.set("view engine", "ejs");
 
 const PORT = 8080; // default port 8080
-
-app.set("view engine", "ejs");
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+const generateRandomString = () => {
+  let text = ""; 
+  let charSet = "abcdefghijklmnopqrstuvwxyz123456789";
+  const textLength = 6;
+  
+  for (let i = 0; i < textLength ; i++) {
+    text += charSet.charAt(Math.floor(Math.random() * textLength));
+  }
+
+  return text;
+}
 
 app.get("/", (req, res) => {
   res.send("Hello!");
