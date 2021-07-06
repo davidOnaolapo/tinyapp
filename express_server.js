@@ -1,4 +1,5 @@
 const express = require("express");
+const fs = require("fs");
 
 const app = express();
 
@@ -47,7 +48,13 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  const shortURL = req.params.shortURL;
+
+  if (!urlDatabase[shortURL]) {
+    res.render("urls_index", {urls: urlDatabase});
+  }
+  const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL]};
+
   res.render("urls_show", templateVars);
 });
 
