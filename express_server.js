@@ -4,7 +4,7 @@ const fs = require("fs");
 const app = express();
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));     // For decoding the buffer
 app.set("view engine", "ejs");
 
 const PORT = 8080; // default port 8080
@@ -19,8 +19,8 @@ const generateRandomString = () => {
   let charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789";
   const textLength = 6;
   
-  for (let i = 0; i < textLength ; i++) {
-    text += charSet.charAt(Math.floor(Math.random() * textLength));
+  for (let i = 0; i < textLength ; i++) { 
+    text += charSet.charAt(Math.floor(Math.random() * textLength));     //Add new random character
   }
 
   return text;
@@ -50,7 +50,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
 
-  if (!urlDatabase[shortURL]) {
+  if (!urlDatabase[shortURL]) {               //Redirect to the main page if the shortURL is not valid
     res.render("urls_index", {urls: urlDatabase});
   }
   const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL]};
@@ -58,7 +58,7 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-app.get("/u/:shortURL", (req, res) => {
+app.get("/u/:shortURL", (req, res) => {   
 
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
@@ -69,10 +69,17 @@ app.post("/urls", (req, res) => {
   
   let newStr = generateRandomString();
 
-  urlDatabase[newStr] = req.body.longURL;
-  const templateVars =  { shortURL: newStr, longURL: urlDatabase[newStr]};
+  urlDatabase[newStr] = req.body.longURL;        //Put the new random string and it corresponding longURL in the DB
+  const templateVars =  { shortURL: newStr, longURL: urlDatabase[newStr]}; 
 
   res.render("urls_show", templateVars);
+});
+
+app.post("/urls/:shortURL/delete", (req, res) => {
+  console.log(req.params);  // Log the POST request body to the console
+
+  delete urlDatabase[req.params.shortURL]
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
