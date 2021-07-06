@@ -1,3 +1,4 @@
+const { KeyObject } = require("crypto");
 const express = require("express");
 const fs = require("fs");
 
@@ -59,14 +60,11 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {   
-
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  
   let newStr = generateRandomString();
 
   urlDatabase[newStr] = req.body.longURL;        //Put the new random string and it corresponding longURL in the DB
@@ -75,10 +73,23 @@ app.post("/urls", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-app.post("/urls/:shortURL/delete", (req, res) => {
-  console.log(req.params);  // Log the POST request body to the console
+app.post("/urls/:id", (req, res) => {
+  let key = req.params.id;
+  let value = req.body.longURL;
 
-  delete urlDatabase[req.params.shortURL]
+  console.log(value)
+
+  urlDatabase[key] = value;
+
+  const templateVars = { shortURL: key, longURL: value }
+
+  res.render("urls_show", templateVars);
+});
+
+app.post("/urls/:shortURL/delete", (req, res) => {
+  let key = req.params.shortURL
+
+  delete urlDatabase[key]
   res.redirect("/urls");
 });
 
