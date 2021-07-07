@@ -1,4 +1,3 @@
-const { KeyObject } = require("crypto");
 const express = require("express");
 const fs = require("fs");
 const cookieParser = require('cookie-parser')
@@ -31,7 +30,10 @@ const generateRandomString = () => {
 }
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  const templateVars = {urls: urlDatabase, username: req.cookies["username"]};
+  res.render("urls_index", templateVars);
+
+  res.render("urls_index");
 });
 
 app.get("/hello", (req, res) => {
@@ -50,6 +52,12 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const templateVars = { username: req.cookies["username"] }
   res.render("urls_new", templateVars);
+});
+
+app.get("/urls/register", (req, res) => {
+  const templateVars = {urls: urlDatabase, username: req.cookies["username"]};
+  
+  res.render("urls_register", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
@@ -78,7 +86,12 @@ app.post("/logout", (req, res) => {
   res.clearCookie("username", req.body.username); 
  
   res.redirect("/urls");
- });
+});
+
+app.post("/urls/register", (req, res) => {
+
+  res.render("urls");
+});
 
 app.post("/urls", (req, res) => {
   let newStr = generateRandomString();
