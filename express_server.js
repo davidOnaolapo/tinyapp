@@ -2,8 +2,6 @@ const express = require("express");
 const fs = require("fs");
 const cookieParser = require('cookie-parser')
 var bodyParser = require('body-parser');
-// var controllers = require("./controllers");
-
 
 
 const app = express();
@@ -23,6 +21,16 @@ const urlDatabase = {
 };
 
 const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
 }
 
 const generateRandomString = () => {
@@ -38,7 +46,7 @@ const generateRandomString = () => {
 }
 
 app.get("/", (req, res) => {
-  const templateVars = {urls: urlDatabase, username: req.cookies["username"]};
+  const templateVars = {urls: urlDatabase, user : users[req.cookies["user_id"]]};
   res.render("urls_index", templateVars);
 
   res.render("urls_index");
@@ -53,24 +61,25 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = {urls: urlDatabase, username: req.cookies["username"]};
+  const templateVars = {urls: urlDatabase, user : users[req.cookies["user_id"]]};
+  console.log(templateVars.user);
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies["username"] }
+  const templateVars = { user : users[req.cookies["user_id"]] }
   res.render("urls_new", templateVars);
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = {urls: urlDatabase, username: req.cookies["username"]};
+  const templateVars = {urls: urlDatabase, user : users[req.cookies["user_id"]]};
   
   res.render("urls_register", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL], username: req.cookies["username"]}
+  const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL], user : users[req.cookies["user_id"]]}
 
   if (!urlDatabase[shortURL]) {               //Redirect to the main page if the shortURL is not valid
     res.render("urls_index", templateVars);
@@ -91,18 +100,16 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username", req.body.username); 
+  res.clearCookie("user_id", req.cookies["user_id"]); 
  
   res.redirect("/urls");
 });
 
 app.post("/urls/register", (req, res) => {
-  let newStr = generateRandomString();
+  const newStr = generateRandomString();
+  const newUser = {id: newStr, email: req.body.email, password: req.body.password}
 
-  users.id = newStr;
-  users.email = req.body.email;
-  users.password = req.body.password;
-
+  users[newStr] = newUser;
   res.cookie("user_id", newStr);
   console.log(users);
   res.redirect("/urls");
@@ -112,7 +119,7 @@ app.post("/urls", (req, res) => {
   let newStr = generateRandomString();
 
   urlDatabase[newStr] = req.body.longURL;        //Put the new random string and it corresponding longURL in the DB
-  const templateVars =  { shortURL: newStr, longURL: urlDatabase[newStr], username: req.cookies["username"]}; 
+  const templateVars =  { shortURL: newStr, longURL: urlDatabase[newStr], user : users[req.cookies["user_id"]]}; 
 
   res.render("urls_show", templateVars);
 });
@@ -123,7 +130,7 @@ app.post("/urls/:id", (req, res) => {
 
   urlDatabase[key] = value;
 
-  const templateVars = { shortURL: key, longURL: value, username: req.cookies["username"] }
+  const templateVars = { shortURL: key, longURL: value, user : users[req.cookies["user_id"]] }
 
   res.render("urls_show", templateVars);
 });
