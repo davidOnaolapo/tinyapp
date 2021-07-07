@@ -1,12 +1,17 @@
 const express = require("express");
 const fs = require("fs");
 const cookieParser = require('cookie-parser')
+var bodyParser = require('body-parser');
+// var controllers = require("./controllers");
+
 
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
+app.use(express.json());
+
 app.use(cookieParser())    // For decoding the buffer
 app.set("view engine", "ejs");
 
@@ -16,6 +21,9 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+const users = { 
+}
 
 const generateRandomString = () => {
   let text = ""; 
@@ -54,7 +62,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-app.get("/urls/register", (req, res) => {
+app.get("/register", (req, res) => {
   const templateVars = {urls: urlDatabase, username: req.cookies["username"]};
   
   res.render("urls_register", templateVars);
@@ -89,8 +97,15 @@ app.post("/logout", (req, res) => {
 });
 
 app.post("/urls/register", (req, res) => {
+  let newStr = generateRandomString();
 
-  res.render("urls");
+  users.id = newStr;
+  users.email = req.body.email;
+  users.password = req.body.password;
+
+  res.cookie("user_id", newStr);
+  console.log(users);
+  res.redirect("/urls");
 });
 
 app.post("/urls", (req, res) => {
@@ -105,8 +120,6 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   let key = req.params.id;
   let value = req.body.longURL;
-
-  console.log(value)
 
   urlDatabase[key] = value;
 
