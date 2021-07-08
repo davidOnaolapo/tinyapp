@@ -18,12 +18,17 @@
           <button type="submit" class="btn btn-outline-secondary" style="margin-left: 6">Logout</button>
       </form>
 <%  } else {  %>
-      <form class="form-inline" action="/login" method="POST" style="height: 30; margin-top: 10;">
-        <div class="form-group mb-2">
-          <input class="form-control" type="text" name="username" placeholder="username">
-          <button type="submit" class="btn btn-outline-secondary" style="margin-left: 6">Login</button>
-        </div>
-      </form>
+  <form class="form-inline" action="/urls/register" method="POST" style="height: 30; margin-top: 10;">
+    <div class="form-group mb-2">    
+      <button type="submit" class="btn btn-success" style="margin-left: 6; font-size: 19;">Sign Up</button>  
+    </div>
+  </form>
+  <form class="form-inline" action="/urls/login" method="POST" style="height: 30; margin-top: 10;">
+    <div class="form-group mb-2">    
+      <button type="submit" class="btn btn-outline-secondary" style="margin-left: 6; margin-top: 2">Login</button>        
+    </div>
+  </form>
+  
 <%  } %>
   </nav>
 </header>
