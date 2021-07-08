@@ -1,10 +1,8 @@
 const express = require("express");
-const fs = require("fs");
-const cookieParser = require('cookie-parser')
-var bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
-var cookieSession = require('cookie-session')
-
+var cookieSession = require('cookie-session');
+const { authenticate, generateRandomString, urlsForUser } = require("./helpers.js");
 
 const app = express();
 
@@ -22,86 +20,15 @@ app.set("view engine", "ejs");
 const PORT = 8080; // default port 8080
 
 const urlDatabase = {
-  "b2xVn2": {
-      longURL: "http://www.lighthouselabs.ca",
-      userID:  "aJ48lW"
-  },
-  "i3BoGr": {
-      longURL:  "http://www.google.com",
-      userID:  "aJ48lW"
-  }
 };
 
 const users = { 
+};
 
-}
-
-const generateRandomString = () => {
-  let text = ""; 
-  let charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789";
-  const textLength = 6;
-  
-  for (let i = 0; i < textLength ; i++) { 
-    text += charSet.charAt(Math.floor(Math.random() * textLength));     //Add new random character
-  }
-
-  return text;
-}
-
-const authenticate = (newUserObj, usersObj, register) => {
-  const {email, password} = newUserObj;
-
-  if (email.length === 0 || password.length === 0) {
-    return "";
-  }
-
-  const usersKeys = Object.keys(usersObj); 
-
-  if (register) {                   // Checking if its authentication for registeration or log in
-    for (key of usersKeys) {
-      if (usersObj[key].email === email) {
-        return "";
-      }
-    }
-    return true;
-  } else {          // Then its an authentication for log in
-    for (userID of usersKeys) {
-      if (usersObj[userID].email === email && bcrypt.compareSync(password, usersObj[userID].password)) {
-        return userID;  
-      }
-    }
-    return "";
-  }  
-}
-
-const urlsForUser = (id, dataBase) => {
-  const urls = {}
-  const keys = Object.keys(dataBase)
- 
-  for (let key of keys) {
-
-    if (id === dataBase[key].userID) {
-      urls[key] = dataBase[key];
-    }
-  }
-  return urls;
-}
 
 app.get("/", (req, res) => {
-  const urls = urlsForUser(req.session.user_id, users);      // urls made by the current logged in user
-  const user = users[req.session.user_id]                    //the current logged in user
 
-  const templateVars = {urls, user};
-
-  res.render("urls_index", templateVars);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
+  res.redirect("/urls");
 });
 
 app.get("/urls", (req, res) => {
@@ -239,7 +166,7 @@ app.post("/urls/:id", (req, res) => {
   const value = req.body.longURL;
   const newDbEntry = {longURL: value, userID: req.session.user_id};
 
-  urlDatabase[key] = newDBEntry;
+  urlDatabase[key] = newDbEntry;
 
   const templateVars = { shortURL: key, longURL: value, user : users[req.session.user_id] }
 
