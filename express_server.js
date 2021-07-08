@@ -45,6 +45,25 @@ const generateRandomString = () => {
   return text;
 }
 
+const authenticate = (newUserObj, usersObj) => {
+  const {email, password} = newUserObj;
+  if (email.length === 0 || password.length === 0) {
+    console.log("They entered an empty string");
+    return false;
+  }
+  console.log(`About to search through ${usersObj}`, usersObj)
+  const usersKeys = Object.keys(usersObj); 
+  for (key of usersKeys) {
+    console.log(key);
+    console.log(`checking if ${usersObj[key].email} = ${email}`)
+    if (usersObj[key].email === email) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 app.get("/", (req, res) => {
   const templateVars = {urls: urlDatabase, user : users[req.cookies["user_id"]]};
   res.render("urls_index", templateVars);
@@ -83,9 +102,9 @@ app.get("/urls/:shortURL", (req, res) => {
 
   if (!urlDatabase[shortURL]) {               //Redirect to the main page if the shortURL is not valid
     res.render("urls_index", templateVars);
+  } else {
+    res.render("urls_show", templateVars);
   }
-
-  res.render("urls_show", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {   
@@ -106,13 +125,19 @@ app.post("/logout", (req, res) => {
 });
 
 app.post("/urls/register", (req, res) => {
-  const newStr = generateRandomString();
-  const newUser = {id: newStr, email: req.body.email, password: req.body.password}
+  const legitInfo = authenticate(req.body, users);
 
-  users[newStr] = newUser;
-  res.cookie("user_id", newStr);
-  console.log(users);
-  res.redirect("/urls");
+  if (legitInfo) {
+    const newStr = generateRandomString();
+    const newUser = {id: newStr, email: req.body.email, password: req.body.password}
+
+    users[newStr] = newUser;
+    res.cookie("user_id", newStr);
+
+    res.redirect("/urls");
+  } else {
+    res.status(404).send("You entered an invalid e-mail or password");
+  } 
 });
 
 app.post("/urls", (req, res) => {
