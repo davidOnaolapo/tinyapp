@@ -16,8 +16,14 @@ app.set("view engine", "ejs");
 const PORT = 8080; // default port 8080
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+      longURL: "http://www.lighthouselabs.ca",
+      userID:  "aJ48lW"
+  },
+  "i3BoGr": {
+      longURL:  "http://www.google.com",
+      userID:  "aJ48lW"
+  }
 };
 
 const users = { 
@@ -73,9 +79,8 @@ const authenticate = (newUserObj, usersObj, register) => {
 
 app.get("/", (req, res) => {
   const templateVars = {urls: urlDatabase, user : users[req.cookies["user_id"]]};
-  res.render("urls_index", templateVars);
 
-  res.render("urls_index");
+  res.render("urls_index", templateVars);
 });
 
 app.get("/hello", (req, res) => {
@@ -92,8 +97,13 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { user : users[req.cookies["user_id"]] }
-  res.render("urls_new", templateVars);
+
+  if (req.cookies["user_id"]) {
+    const templateVars = { user : users[req.cookies["user_id"]] }
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect("/login")
+  }
 });
 
 app.get("/register", (req, res) => {
@@ -110,27 +120,43 @@ app.get("/login", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL], user : users[req.cookies["user_id"]]}
 
-  if (!urlDatabase[shortURL]) {               //Redirect to the main page if the shortURL is not valid
+  if (!urlDatabase[shortURL]) {  
+    const templateVars = { urls: urlDatabase, user : users[req.cookies["user_id"]]} //Redirect to the main page if the shortURL is not valid
+
     res.render("urls_index", templateVars);
   } else {
+    const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL].longURL, user : users[req.cookies["user_id"]]}
+
     res.render("urls_show", templateVars);
   }
 });
 
 app.get("/u/:shortURL", (req, res) => {   
-  const longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
+  if (!urlDatabase[req.params.shortURL]) {
+    res.status(404).send("This shortURL does not exist. Please log in to create shortURLs")
+  } else {
+    const longURL = urlDatabase[req.params.shortURL].longURL;
+    
+    res.redirect(longURL);
+  }
 });
 
 app.post("/urls", (req, res) => {
   let newStr = generateRandomString();
 
-  urlDatabase[newStr] = req.body.longURL;        //Put the new random string and it corresponding longURL in the DB
-  const templateVars =  { shortURL: newStr, longURL: urlDatabase[newStr], user : users[req.cookies["user_id"]]}; 
+  if (req.cookies["user_id"]) {
+    console.log(urlDatabase)
+    const newDBEntry = {longURL: req.body.longURL, userId: req.cookies["user_id"]}
 
-  res.render("urls_show", templateVars);
+    urlDatabase[newStr] = newDBEntry;        //Put the new random string and its corresponding longURL in the DB
+    const templateVars =  { shortURL: newStr, longURL: urlDatabase[newStr].longURL, user : users[req.cookies["user_id"]]}; 
+
+    res.render("urls_show", templateVars);
+  } else {
+    res.status(404).send("You need to be logged in to get a new TinyUrl. Sign up Its free!");
+  }
+  
 });
 
 app.post("/login", (req, res) => {
@@ -184,7 +210,7 @@ app.post("/urls/:id", (req, res) => {
   let key = req.params.id;
   let value = req.body.longURL;
 
-  urlDatabase[key] = value;
+  urlDatabase[key].longURL = value;
 
   const templateVars = { shortURL: key, longURL: value, user : users[req.cookies["user_id"]] }
 
