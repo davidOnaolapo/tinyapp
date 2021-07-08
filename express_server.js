@@ -2,11 +2,11 @@ const express = require("express");
 const fs = require("fs");
 const cookieParser = require('cookie-parser')
 var bodyParser = require('body-parser');
+const bcrypt = require('bcrypt');
 
 
 const app = express();
 
-app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 app.use(express.json());
 
@@ -27,16 +27,7 @@ const urlDatabase = {
 };
 
 const users = { 
-  "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
-  },
- "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
-    password: "dishwasher-funk"
-  }
+
 }
 
 const generateRandomString = () => {
@@ -68,9 +59,9 @@ const authenticate = (newUserObj, usersObj, register) => {
     }
     return true;
   } else {          // Then its an authentication for log in
-    for (key of usersKeys) {
-      if (usersObj[key].email === email && usersObj[key].password === password) {
-        return key;  // Return userID
+    for (userID of usersKeys) {
+      if (usersObj[userID].email === email && bcrypt.compareSync(password, usersObj[userID].password)) {
+        return userID;  
       }
     }
     return "";
@@ -212,8 +203,10 @@ app.post("/register", (req, res) => {
 
   if (legitInfo) {
     const newStr = generateRandomString();
-    const newUser = {id: newStr, email: req.body.email, password: req.body.password}
+    const hashedPassword = bcrypt.hashSync(req.body.password, 10);
 
+    const newUser = {id: newStr, email: req.body.email, password: hashedPassword}
+    console.log(newUser)
     users[newStr] = newUser;
     res.cookie("user_id", newStr);
 
@@ -263,7 +256,7 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 
   if (req.cookies["user_id"] === urlDatabase[key].userID) {
     const templateVars = { shortURL: key, longURL: value, user : users[req.cookies["user_id"]] }
-    
+
     res.render("urls_show", templateVars);
   } else {
     res.redirect("/urls");
