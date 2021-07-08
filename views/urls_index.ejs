@@ -11,34 +11,46 @@
 <body >
   <%- include('partials/_header') %>
   <main style="margin: 1em;">
-    <h3>My URLs</h3>
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Short URL</th>
-          <th scope="col">Long URL</th>
-          <th scope="col">Edit</th>
-          <th scope="col"> Delete</th>
 
-        </tr>
-      </thead>
-      <tbody>
-        <% for(let url in urls) { %>
-          <tr>
-            <td><%= url %></td>
-            <td><%= urls[url].longURL %></td>
-            <td>
-              <form class="form-inline" action= "/urls/<%= url %>">
-                <button type="submit" class="btn btn-outline-primary">EDIT</button>
-              </form>
-            </td>
-            <td>
-              <form class="form-inline" action= "/urls/<%= url %>/delete" method="POST">
-                <button type="submit" class="btn btn-outline-danger">DELETE</button>
-              </form>  
-            </td>
-          </tr>
-        <% } %>
+  <% if (!user) { %>
+        <h1>Please Sign up or Log in to use TinyApp <span>🚀</span></h1> 
+  <% } else if (Object.keys(urls).length === 0) {  %>
+        <div style="margin-left: 215; margin-bottom: 10">
+          <svg  xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up-square" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm8.5 9.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V11.5z"/>
+          </svg>
+        </div>
+        <h3>You have no TinyURLs yet, you're welcome to create one <span>🙂</span></h3>
+  <% } else {  %>    
+        <h3>My URLs</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Short URL</th>
+              <th scope="col">Long URL</th>
+              <th scope="col">Edit</th>
+              <th scope="col"> Delete</th>
+
+            </tr>
+          </thead>
+          <tbody>
+            <% for(let url in urls) { %>
+                  <tr>
+                    <td><%= url %></td>
+                    <td><%= urls[url].longURL %></td>
+                    <td>
+                      <form class="form-inline" action= "/urls/<%= url%>/edit" method="POST">
+                        <button type="submit" class="btn btn-outline-primary">EDIT</button>
+                      </form>
+                    </td>
+                    <td>
+                      <form class="form-inline" action= "/urls/<%= url %>/delete" method="POST">
+                        <button type="submit" class="btn btn-outline-danger">DELETE</button>
+                      </form>  
+                    </td>
+                  </tr>
+            <% } %>
+  <% } %>        
       </tbody>
     </table>
   </main>
