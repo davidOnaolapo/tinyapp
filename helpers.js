@@ -6,7 +6,7 @@ const generateRandomString = () => {
   const textLength = 6;
   
   for (let i = 0; i < textLength ; i++) { 
-    text += charSet.charAt(Math.floor(Math.random() * textLength));     //Add new random character
+    text += charSet.charAt(Math.floor(Math.random() * textLength));    //Add new random character
   }
 
   return text;
@@ -16,25 +16,25 @@ const authenticate = (newUserObj, usersDatabase, register) => {
   const {email, password} = newUserObj;
 
   if (email.length === 0 || password.length === 0) {
-    return;
+    return "er1";    // for errors page 
   }
 
   const usersKeys = Object.keys(usersDatabase); 
 
-  if (register) {                   // Checking if its authentication for registeration or log in
+  if (register) {             // Checking if its authentication for registeration or log in
     for (userID of usersKeys) {
       if (usersDatabase[userID].email === email) {
-        return;
+        return "er2";      //for errors page
       }
     }
-    return true;
-  } else {          // If the authentication isnt for registration, then its for log in
+    return "legit";     //legitimate
+  } else {             // If the authentication isnt for registration, then its for log in
     for (userID of usersKeys) {
       if (usersDatabase[userID].email === email && bcrypt.compareSync(password, usersDatabase[userID].password)) {
         return userID;  
       }
     }
-    return;
+    return "er3";    //for errors page
   }  
 }
 
